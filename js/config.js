@@ -1,6 +1,6 @@
 const CONFIG = {
   GOOGLE_CLIENT_ID: '1086306113674-g0pq4rv702aqrvol7hopifkhnssrr69b.apps.googleusercontent.com',
-  GOOGLE_SCOPES: 'https://www.googleapis.com/auth/gmail.readonly',
+  GOOGLE_SCOPES: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
   VINTED_SENDERS: [
     'no-reply@vinted.fr',
     'noreply@vinted.fr',

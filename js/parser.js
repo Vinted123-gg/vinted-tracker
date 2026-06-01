@@ -1,12 +1,15 @@
 const Parser = {
   SALE_SUBJECT_PATTERNS: [
-    /vous avez vendu/i,
-    /your item has sold/i,
-    /félicitations.*vendu/i,
-    /nouvelle vente/i,
-    /votre article a été vendu/i,
-    /congratulations.*sold/i,
-  ],
+  /ton article s'est vendu/i,
+  /vous avez vendu/i,
+  /your item has sold/i,
+  /félicitations.*vendu/i,
+  /nouvelle vente/i,
+  /votre article a été vendu/i,
+  /congratulations.*sold/i,
+  /s'est vendu/i,
+  /a été vendu/i,
+],
   PRICE_PATTERNS: [
     /(\d+[.,]\d{2})\s*€/,
     /€\s*(\d+[.,]\d{2})/,

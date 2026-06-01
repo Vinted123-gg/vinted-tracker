@@ -12,6 +12,7 @@ const Parser = {
 ],
   PRICE_PATTERNS: [
     /(\d+[.,]\d{2})\s*€/,
+    /(\d+[.,]\d{2})\s*€/,
     /€\s*(\d+[.,]\d{2})/,
     /prix.*?(\d+[.,]\d{2})/i,
     /montant.*?(\d+[.,]\d{2})/i,

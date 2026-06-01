@@ -51,7 +51,7 @@ const Gmail = {
 
   async fetchVintedEmails(accessToken, sinceDate = null) {
     const senderQuery = CONFIG.VINTED_SENDERS.map(s => `from:${s}`).join(' OR ');
-    let query = `(${senderQuery})`;
+    let query = `(${senderQuery}) (subject:"vendu" OR subject:"sold" OR subject:"s'est vendu" OR subject:"article s'est vendu")`;
     if (sinceDate) {
       const after = Math.floor(new Date(sinceDate).getTime() / 1000);
       query += ` after:${after}`;

@@ -2,6 +2,11 @@ const App = {
   syncInterval: null,
 
   async init() {
+    const tokenData = Gmail.handleRedirectToken();
+    if (tokenData) {
+      await this.handleOAuthCallback(tokenData);
+      return;
+    }
     setTimeout(() => {
       document.getElementById('splash')?.classList.add('hide');
       setTimeout(() => {
@@ -10,6 +15,34 @@ const App = {
       }, 400);
     }, 1200);
     this.bindEvents();
+  },
+
+  async handleOAuthCallback(tokenData) {
+    document.getElementById('splash')?.classList.add('hide');
+    setTimeout(() => document.getElementById('splash')?.remove(), 400);
+    try {
+      const profile = await Gmail.getUserProfile(tokenData.accessToken);
+      const existing = Storage.getAccounts().find(a => a.email === profile.email);
+      if (existing) {
+        Gmail.saveToken(existing.id, tokenData);
+      } else {
+        const accounts = Storage.getAccounts();
+        const account = {
+          id: 'acct_' + Date.now(),
+          email: profile.email,
+          name: '@' + profile.email.split('@')[0],
+          color: CONFIG.ACCOUNT_COLORS[accounts.length % CONFIG.ACCOUNT_COLORS.length],
+          connectedAt: new Date().toISOString(),
+        };
+        Gmail.saveToken(account.id, tokenData);
+        Storage.addAccount(account);
+      }
+      this.showApp();
+      setTimeout(() => this.syncAll(), 1000);
+    } catch (e) {
+      console.error(e);
+      this.checkAuth();
+    }
   },
 
   checkAuth() {
@@ -40,38 +73,7 @@ const App = {
   },
 
   async connectGoogleAccount() {
-    if (CONFIG.GOOGLE_CLIENT_ID === 'VOTRE_CLIENT_ID_ICI') {
-      UI.toast('⚠️ Configurez votre Client ID Google dans js/config.js');
-      return;
-    }
-    try {
-      UI.toast('Ouverture de Google...');
-      const { accessToken, expiresAt } = await Gmail.authenticate();
-      const profile = await Gmail.getUserProfile(accessToken);
-      const existing = Storage.getAccounts().find(a => a.email === profile.email);
-      if (existing) {
-        Gmail.saveToken(existing.id, { accessToken, expiresAt });
-        UI.toast('Compte déjà connecté, token rafraîchi ✓');
-        return;
-      }
-      const accounts = Storage.getAccounts();
-      const colorIndex = accounts.length % CONFIG.ACCOUNT_COLORS.length;
-      const account = {
-        id: 'acct_' + Date.now(),
-        email: profile.email,
-        name: '@' + profile.email.split('@')[0],
-        color: CONFIG.ACCOUNT_COLORS[colorIndex],
-        connectedAt: new Date().toISOString(),
-      };
-      Gmail.saveToken(account.id, { accessToken, expiresAt });
-      Storage.addAccount(account);
-      UI.toast('Compte connecté ! Import en cours...');
-      UI.renderAuthScreen();
-      await this.syncAccount(account.id);
-    } catch (e) {
-      console.error(e);
-      UI.toast('Erreur : ' + e.message);
-    }
+    await Gmail.authenticate();
   },
 
   async removeAccount(accountId) {
@@ -92,7 +94,7 @@ const App = {
     for (const account of accounts) { totalNew += await this.syncAccount(account.id, false); }
     if (btnSync) btnSync.querySelector('.ti')?.classList.remove('spinning');
     UI.hideSyncBar();
-    if (totalNew > 0) { UI.toast(`${totalNew} nouvelle${totalNew > 1 ? 's' : ''} vente${totalNew > 1 ? 's' : ''} importée${totalNew > 1 ? 's' : ''} !`); }
+    if (totalNew > 0) { UI.toast(`${totalNew} vente${totalNew > 1 ? 's' : ''} importée${totalNew > 1 ? 's' : ''} !`); }
     else { UI.toast('Tout est à jour ✓'); }
     const activeTab = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
     if (activeTab) this.switchTab(activeTab);
@@ -104,14 +106,8 @@ const App = {
     let token = Gmail.getToken(accountId);
     if (!token) {
       if (showFeedback) UI.toast('Re-authentification nécessaire...');
-      try {
-        const { accessToken, expiresAt } = await Gmail.authenticate();
-        Gmail.saveToken(accountId, { accessToken, expiresAt });
-        token = accessToken;
-      } catch (e) {
-        if (showFeedback) UI.toast('Authentification annulée');
-        return 0;
-      }
+      await Gmail.authenticate();
+      return 0;
     }
     UI.showSyncBar(`Sync ${account.name}...`);
     try {

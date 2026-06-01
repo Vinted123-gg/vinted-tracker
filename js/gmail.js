@@ -15,15 +15,15 @@ const Gmail = {
   },
 
   handleRedirectToken() {
-    const hash = window.location.hash.substring(1);
-    if (!hash.includes('access_token')) return false;
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get('access_token');
-    const expiresIn = parseInt(params.get('expires_in') || '3600');
-    if (!accessToken) return false;
-    history.replaceState(null, '', window.location.pathname);
-    return { accessToken, expiresAt: Date.now() + expiresIn * 1000 };
-  },
+  const hash = window.location.hash.substring(1);
+  if (!hash.includes('access_token')) return false;
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in') || '3600');
+  if (!accessToken) return false;
+  history.replaceState(null, '', window.location.pathname);
+  return { accessToken, expiresAt: Date.now() + expiresIn * 1000 };
+},
 
   saveToken(accountId, tokenData) {
     localStorage.setItem(this.TOKEN_KEY_PREFIX + accountId, JSON.stringify({ ...tokenData, savedAt: Date.now() }));

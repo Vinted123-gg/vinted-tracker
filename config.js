@@ -6,7 +6,7 @@
 const CONFIG = {
   // Votre Client ID Google Cloud (OAuth 2.0)
   // Format: XXXXXXXXXXXX-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
-  GOOGLE_CLIENT_ID: 'VOTRE_CLIENT_ID_ICI',
+  GOOGLE_CLIENT_ID: '1086306113674-g0pq4rv702aqrvol7hopifkhnssrr69b.apps.googleusercontent.com',
 
   // Scopes Gmail nécessaires (lecture seule)
   GOOGLE_SCOPES: 'https://www.googleapis.com/auth/gmail.readonly',

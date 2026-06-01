@@ -2,33 +2,27 @@ const Gmail = {
   TOKEN_KEY_PREFIX: 'vt_token_',
 
   async authenticate() {
-    return new Promise((resolve, reject) => {
-      const params = new URLSearchParams({
-        client_id: CONFIG.GOOGLE_CLIENT_ID,
-        redirect_uri: window.location.origin + window.location.pathname,
-        response_type: 'token',
-        scope: CONFIG.GOOGLE_SCOPES,
-        prompt: 'select_account',
-      });
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-      const popup = window.open(authUrl, 'google-auth', 'width=500,height=600');
-      const interval = setInterval(() => {
-        try {
-          if (!popup || popup.closed) { clearInterval(interval); reject(new Error('Fenêtre fermée')); return; }
-          const url = popup.location.href;
-          if (url.includes('access_token') || url.includes('#')) {
-            const hash = popup.location.hash.substring(1);
-            const tokenParams = new URLSearchParams(hash);
-            const accessToken = tokenParams.get('access_token');
-            const expiresIn = parseInt(tokenParams.get('expires_in') || '3600');
-            popup.close(); clearInterval(interval);
-            if (accessToken) { resolve({ accessToken, expiresAt: Date.now() + expiresIn * 1000 }); }
-            else { reject(new Error('Token non trouvé')); }
-          }
-        } catch (e) {}
-      }, 300);
-      setTimeout(() => { clearInterval(interval); if (!popup.closed) popup.close(); reject(new Error('Timeout')); }, 120000);
+    const params = new URLSearchParams({
+      client_id: CONFIG.GOOGLE_CLIENT_ID,
+      redirect_uri: window.location.origin + window.location.pathname,
+      response_type: 'token',
+      scope: CONFIG.GOOGLE_SCOPES,
+      prompt: 'select_account',
     });
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    window.location.href = authUrl;
+    return new Promise(() => {});
+  },
+
+  handleRedirectToken() {
+    const hash = window.location.hash.substring(1);
+    if (!hash.includes('access_token')) return false;
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const expiresIn = parseInt(params.get('expires_in') || '3600');
+    if (!accessToken) return false;
+    history.replaceState(null, '', window.location.pathname);
+    return { accessToken, expiresAt: Date.now() + expiresIn * 1000 };
   },
 
   saveToken(accountId, tokenData) {
@@ -71,9 +65,8 @@ const Gmail = {
     if (!listData.messages || listData.messages.length === 0) return [];
     const ids = listData.messages.map(m => m.id);
     const emails = [];
-    const batchSize = 5;
-    for (let i = 0; i < ids.length; i += batchSize) {
-      const batch = ids.slice(i, i + batchSize);
+    for (let i = 0; i < ids.length; i += 5) {
+      const batch = ids.slice(i, i + 5);
       const fetched = await Promise.all(
         batch.map(id => fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`,

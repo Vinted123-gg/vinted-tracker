@@ -158,4 +158,99 @@ const UI = {
   },
 
   renderSalesList() {
-    const el = document.getEleme
+    const el = document.getElementById('salesList');
+    const cEl = document.getElementById('salesCount');
+    if (!el) return;
+    const search = (document.getElementById('searchInput')?.value||'').toLowerCase();
+    const fA = document.getElementById('filterAccount')?.value||'';
+    const fM = document.getElementById('filterMonth')?.value||'';
+    const fS = document.getElementById('filterStatus')?.value||'';
+    let sales = Storage.getSales().filter(s => {
+      if (search && !s.title?.toLowerCase().includes(search)) return false;
+      if (fA && s.accountId !== fA) return false;
+      if (fM && s.date?.slice(0,7) !== fM) return false;
+      if (fS && s.status !== fS) return false;
+      return true;
+    });
+    if (cEl) cEl.textContent = sales.length;
+    if (!sales.length) { el.innerHTML = '<div class="empty-state"><i class="ti ti-receipt-off"></i><p>Aucune vente trouvée</p></div>'; return; }
+    el.innerHTML = '<div class="card">' + sales.map(s => this.saleItemHTML(s, true)).join('') + '</div>';
+  },
+
+  saleItemHTML(sale, withDelete = false) {
+    const account = Storage.getAccount(sale.accountId);
+    const color = account?.color || '#888';
+    const icons = ['ti-shirt','ti-shoe','ti-handbag','ti-jacket','ti-hat','ti-sunglasses','ti-pants','ti-tie'];
+    const icon = icons[Math.abs((sale.title?.charCodeAt(0)||0)) % icons.length];
+    const statusClass = sale.status === 'livré' ? 'badge-livré' : sale.status === 'expédié' ? 'badge-expédié' : 'badge-vendu';
+    const del = withDelete ? `<button style="border:none;background:none;color:var(--text-3);font-size:16px;cursor:pointer;padding:4px" onclick="App.deleteSale('${sale.id}')"><i class="ti ti-trash"></i></button>` : '';
+    return `
+      <div class="sale-item">
+        <div class="sale-thumb" style="background:${color}12"><i class="ti ${icon}" style="color:${color};font-size:16px"></i></div>
+        <div class="sale-info">
+          <div class="sale-title">${sale.title || 'Article vendu'}</div>
+          <div class="sale-meta">${this.fmtDate(sale.date)} · <span style="color:${color}">${account?.name || '—'}</span></div>
+        </div>
+        <div class="sale-right">
+          <div class="sale-price">${this.fmt(parseFloat(sale.price)||0)}</div>
+          <span class="sale-status-badge ${statusClass}">${sale.status||'vendu'}</span>
+        </div>
+        ${del}
+      </div>`;
+  },
+
+  renderAccountsTab() {
+    const el = document.getElementById('accountsGrid');
+    if (!el) return;
+    const accounts = Storage.getAccounts();
+    if (!accounts.length) { el.innerHTML = '<div class="empty-state"><i class="ti ti-user-off"></i><p>Aucun compte connecté</p></div>'; return; }
+    el.innerHTML = '<div class="accounts-grid">' + accounts.map(a => this.accountCardHTML(a)).join('') + '</div>';
+  },
+
+  accountCardHTML(account) {
+    const stats = Storage.getStats(account.id, 0);
+    const lastSync = Storage.getLastSync()?.[account.id];
+    return `
+      <div class="account-card">
+        <div class="account-card-header">
+          <div class="account-card-avatar" style="background:${account.color}">${this.initials(account.email)}</div>
+          <div>
+            <div class="account-card-name">${account.name}</div>
+            <div class="account-card-email">${account.email}</div>
+          </div>
+        </div>
+        <div class="account-card-stats">
+          <div class="acct-stat"><div class="acct-stat-val" style="color:${account.color}">${stats.count}</div><div class="acct-stat-label">Ventes</div></div>
+          <div class="acct-stat"><div class="acct-stat-val">${this.fmt(stats.ca)}</div><div class="acct-stat-label">CA total</div></div>
+          <div class="acct-stat"><div class="acct-stat-val">${this.fmt(stats.ca * 0.95)}</div><div class="acct-stat-label">Net</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:12px">${lastSync ? 'Dernière sync : ' + this.fmtRelative(lastSync) : 'Jamais synchronisé'}</div>
+        <div class="account-card-actions">
+          <button class="btn-sm primary" onclick="App.syncAccount('${account.id}')"><i class="ti ti-refresh"></i> Synchroniser</button>
+          <button class="btn-sm danger" onclick="App.removeAccount('${account.id}')"><i class="ti ti-unlink"></i> Déconnecter</button>
+        </div>
+      </div>`;
+  },
+
+  renderAuthScreen() {
+    const accounts = Storage.getAccounts();
+    const cEl = document.getElementById('connectedAccounts');
+    const iEl = document.getElementById('accountItems');
+    if (!cEl || !iEl) return;
+    if (accounts.length > 0) {
+      cEl.classList.remove('hidden');
+      iEl.innerHTML = accounts.map(a => `
+        <div class="account-item">
+          <div class="account-avatar" style="background:${a.color}">${this.initials(a.email)}</div>
+          <div class="account-info"><div class="account-name">${a.name}</div><div class="account-email">${a.email}</div></div>
+          <div class="account-status ok"><i class="ti ti-check"></i></div>
+        </div>`).join('');
+    } else { cEl.classList.add('hidden'); }
+  },
+
+  showSyncBar(msg = 'Synchronisation...') {
+    document.getElementById('syncBar')?.classList.remove('hidden');
+    const m = document.getElementById('syncMsg'); if (m) m.textContent = msg;
+  },
+  hideSyncBar() { document.getElementById('syncBar')?.classList.add('hidden'); },
+};

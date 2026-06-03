@@ -1,24 +1,16 @@
 const Parser = {
   SALE_SUBJECT_PATTERNS: [
   /ton article s'est vendu/i,
+  /s'est vendu/i,
   /vous avez vendu/i,
   /your item has sold/i,
-  /félicitations.*vendu/i,
   /nouvelle vente/i,
-  /votre article a été vendu/i,
   /congratulations.*sold/i,
-  /s'est vendu/i,
-  /a été vendu/i,
 ],
   PRICE_PATTERNS: [
-    /(\d+[.,]\d{2})\s*€/,
-    /(\d+[.,]\d{2})\s*€/,
-    /€\s*(\d+[.,]\d{2})/,
-    /prix.*?(\d+[.,]\d{2})/i,
-    /montant.*?(\d+[.,]\d{2})/i,
-    /total.*?(\d+[.,]\d{2})/i,
-    /(\d+[.,]\d{2})\s*EUR/i,
-  ],
+  /(\d+[,\.]\d{2})\s*(?:€|â¬|EUR)/,
+  /(\d+[,\.]\d{2})/,
+],
   TITLE_PATTERNS: [
     /"([^"]{3,80})"/,
     /article\s*:\s*([^\n\r<]{3,80})/i,
@@ -32,10 +24,10 @@ const Parser = {
   ],
 
   isSaleEmail(subject, from) {
-    const isVinted = CONFIG.VINTED_SENDERS.some(s => from.toLowerCase().includes(s.toLowerCase()));
-    if (!isVinted) return false;
-    return this.SALE_SUBJECT_PATTERNS.some(p => p.test(subject));
-  },
+  const isVinted = from.toLowerCase().includes('vinted');
+  if (!isVinted) return false;
+  return this.SALE_SUBJECT_PATTERNS.some(p => p.test(subject));
+},
 
   parsePrice(text) {
     for (const pattern of this.PRICE_PATTERNS) {

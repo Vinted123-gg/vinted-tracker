@@ -60,6 +60,11 @@ const App = {
     this.showScreen('app');
     UI.renderDashboard();
     this.startAutoSync();
+    const accounts = Storage.getAccounts();
+    const sales = Storage.getSales();
+    if (accounts.length > 0 && sales.length === 0) {
+      setTimeout(() => this.syncAll(), 1500);
+    }
   },
 
   switchTab(tabName) {
@@ -94,8 +99,11 @@ const App = {
     for (const account of accounts) { totalNew += await this.syncAccount(account.id, false); }
     if (btnSync) btnSync.querySelector('.ti')?.classList.remove('spinning');
     UI.hideSyncBar();
-    if (totalNew > 0) { UI.toast(`${totalNew} vente${totalNew > 1 ? 's' : ''} importée${totalNew > 1 ? 's' : ''} !`); }
-    else { UI.toast('Tout est à jour ✓'); }
+    if (totalNew > 0) {
+      UI.toast(`${totalNew} vente${totalNew > 1 ? 's' : ''} importée${totalNew > 1 ? 's' : ''} !`);
+    } else {
+      UI.toast('Tout est à jour ✓');
+    }
     const activeTab = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
     if (activeTab) this.switchTab(activeTab);
   },
@@ -122,7 +130,9 @@ const App = {
           UI.toast(`${added} vente${added > 1 ? 's' : ''} importée${added > 1 ? 's' : ''} !`);
           const activeTab = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
           if (activeTab) this.switchTab(activeTab);
-        } else { UI.toast('Tout est à jour ✓'); }
+        } else {
+          UI.toast('Tout est à jour ✓');
+        }
       }
       return added;
     } catch (e) {
@@ -138,16 +148,6 @@ const App = {
     const freq = (settings.syncFreq || 60) * 60 * 1000;
     if (this.syncInterval) clearInterval(this.syncInterval);
     this.syncInterval = setInterval(() => this.syncAll(), freq);
-    const ls = Storage.getLastSync();
-    if (ls) {
-      const dates = Object.values(ls).filter(Boolean).sort().reverse();
-      if (dates.length) {
-        const elapsed = Date.now() - new Date(dates[0]).getTime();
-        if (elapsed > 30 * 60 * 1000) this.syncAll();
-      }
-    } else {
-      setTimeout(() => this.syncAll(), 2000);
-    }
   },
 
   deleteSale(saleId) {

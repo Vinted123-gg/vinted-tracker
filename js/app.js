@@ -1,5 +1,7 @@
 const App = {
   syncInterval: null,
+  accounts: [],
+  sales: [],
 
   async init() {
     const tokenData = Gmail.handleRedirectToken();
@@ -22,11 +24,11 @@ const App = {
     setTimeout(() => document.getElementById('splash')?.remove(), 400);
     try {
       const profile = await Gmail.getUserProfile(tokenData.accessToken);
-      const existing = Storage.getAccounts().find(a => a.email === profile.email);
+      const accounts = await Storage.getAccounts();
+      const existing = accounts.find(a => a.email === profile.email);
       if (existing) {
-        Gmail.saveToken(existing.id, tokenData);
+        Storage.saveToken(existing.id, tokenData);
       } else {
-        const accounts = Storage.getAccounts();
         const account = {
           id: 'acct_' + Date.now(),
           email: profile.email,
@@ -34,37 +36,48 @@ const App = {
           color: CONFIG.ACCOUNT_COLORS[accounts.length % CONFIG.ACCOUNT_COLORS.length],
           connectedAt: new Date().toISOString(),
         };
-        Gmail.saveToken(account.id, tokenData);
-        Storage.addAccount(account);
+        Storage.saveToken(account.id, tokenData);
+        await Storage.addAccount(account);
       }
-      this.showApp();
+      await this.showApp();
       setTimeout(() => this.syncAll(), 1000);
     } catch (e) {
       console.error(e);
-      this.checkAuth();
+      await this.checkAuth();
     }
   },
 
-  checkAuth() {
-    const accounts = Storage.getAccounts();
-    if (accounts.length > 0) { this.showApp(); } else { this.showScreen('auth'); }
+  async checkAuth() {
+    const accounts = await Storage.getAccounts();
+    if (accounts.length > 0) { await this.showApp(); } else { this.showScreen('auth'); }
   },
 
   showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(`screen-${name}`)?.classList.remove('hidden');
-    if (name === 'auth') UI.renderAuthScreen();
+    if (name === 'auth') this.renderAuthScreen();
   },
 
-  showApp() {
+  async renderAuthScreen() {
+    const accounts = await Storage.getAccounts();
+    const cEl = document.getElementById('connectedAccounts');
+    const iEl = document.getElementById('accountItems');
+    if (!cEl || !iEl) return;
+    if (accounts.length > 0) {
+      cEl.classList.remove('hidden');
+      iEl.innerHTML = accounts.map(a => `
+        <div class="account-item">
+          <div class="account-avatar" style="background:${a.color}">${a.email.substring(0,2).toUpperCase()}</div>
+          <div class="account-info"><div class="account-name">${a.name}</div><div class="account-email">${a.email}</div></div>
+          <div class="account-status ok"><i class="ti ti-check"></i></div>
+        </div>`).join('');
+    } else { cEl.classList.add('hidden'); }
+  },
+
+  async showApp() {
     this.showScreen('app');
-    UI.renderDashboard();
+    await UI.renderDashboard();
     this.startAutoSync();
-    const accounts = Storage.getAccounts();
-    const sales = Storage.getSales();
-    if (accounts.length > 0 && sales.length === 0) {
-      setTimeout(() => this.syncAll(), 1500);
-    }
   },
 
   switchTab(tabName) {
@@ -83,15 +96,15 @@ const App = {
 
   async removeAccount(accountId) {
     if (!confirm('Déconnecter ce compte ? Les ventes importées seront conservées.')) return;
-    Gmail.removeToken(accountId);
-    Storage.removeAccount(accountId);
+    Storage.removeToken(accountId);
+    await Storage.removeAccount(accountId);
     UI.toast('Compte déconnecté');
     UI.renderAccountsTab();
     UI.renderDashboard();
   },
 
   async syncAll() {
-    const accounts = Storage.getAccounts();
+    const accounts = await Storage.getAccounts();
     if (!accounts.length) { UI.toast('Aucun compte connecté'); return; }
     const btnSync = document.getElementById('btnSync');
     if (btnSync) btnSync.querySelector('.ti')?.classList.add('spinning');
@@ -109,9 +122,9 @@ const App = {
   },
 
   async syncAccount(accountId, showFeedback = true) {
-    const account = Storage.getAccount(accountId);
+    const account = await Storage.getAccount(accountId);
     if (!account) return 0;
-    let token = Gmail.getToken(accountId);
+    let token = Storage.getToken(accountId);
     if (!token) {
       if (showFeedback) UI.toast('Re-authentification nécessaire...');
       await Gmail.authenticate();
@@ -119,20 +132,19 @@ const App = {
     }
     UI.showSyncBar(`Sync ${account.name}...`);
     try {
-      const lastSync = Storage.getLastSync()?.[accountId];
+      const lastSyncData = await Storage.getLastSync();
+      const lastSync = lastSyncData?.[accountId];
       const messages = await Gmail.fetchVintedEmails(token, lastSync || null);
       const sales = Parser.parseEmails(messages, accountId);
-      const added = Storage.addSales(sales);
-      Storage.setLastSync(accountId, new Date().toISOString());
+      const added = await Storage.addSales(sales);
+      await Storage.setLastSync(accountId, new Date().toISOString());
       if (showFeedback) {
         UI.hideSyncBar();
         if (added > 0) {
           UI.toast(`${added} vente${added > 1 ? 's' : ''} importée${added > 1 ? 's' : ''} !`);
           const activeTab = document.querySelector('.tab-content.active')?.id?.replace('tab-', '');
           if (activeTab) this.switchTab(activeTab);
-        } else {
-          UI.toast('Tout est à jour ✓');
-        }
+        } else { UI.toast('Tout est à jour ✓'); }
       }
       return added;
     } catch (e) {
@@ -150,9 +162,9 @@ const App = {
     this.syncInterval = setInterval(() => this.syncAll(), freq);
   },
 
-  deleteSale(saleId) {
+  async deleteSale(saleId) {
     if (!confirm('Supprimer cette vente ?')) return;
-    Storage.deleteSale(saleId);
+    await Storage.deleteSale(saleId);
     UI.renderSalesList();
     UI.renderDashboard();
     UI.toast('Vente supprimée');

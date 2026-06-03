@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 
@@ -88,7 +88,7 @@
         <div class="account-filter" id="chartFilter"></div>
       </div>
       <div class="chart-wrap">
-        <canvas id="revenueChart" role="img" aria-label="Courbe du chiffre d'affaires mensuel">CA mensuel.</canvas>
+        <canvas id="revenueChart"></canvas>
       </div>
     </div>
     <div class="section-label">Ce que j'ai vendu</div>
@@ -158,13 +158,19 @@
 </div>
 <div id="overlay" class="overlay hidden"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="js/config.js?v=3"></script>
 <script src="js/storage.js?v=3"></script>
 <script src="js/gmail.js?v=3"></script>
 <script src="js/parser.js?v=3"></script>
 <script src="js/ui.js?v=3"></script>
 <script src="js/app.js?v=3"></script>
-</body>
-</html>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    });
+  }
+</script>
 </body>
 </html>

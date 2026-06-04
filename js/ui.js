@@ -80,13 +80,17 @@ const UI = {
       sales = sales.filter(function(s) { return new Date(s.date) >= since; });
     }
     const byMonth = {};
-if (days === 7) {
+if (days === 1) {
+  var today = new Date();
+  var todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  byMonth[todayKey] = 0;
+} else if (days === 7) {
   for (var i = 6; i >= 0; i--) {
-  var d = new Date();
-  d.setDate(d.getDate() - i);
-  var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  byMonth[key] = 0;
-}
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    byMonth[key] = 0;
+  }
 }
 sales.forEach(function(s) {
   const key = days === 7 ? s.date : (s.date ? s.date.slice(0,7) : null);

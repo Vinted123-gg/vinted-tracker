@@ -82,10 +82,11 @@ const UI = {
     const byMonth = {};
 if (days === 7) {
   for (var i = 6; i >= 0; i--) {
-    var d = new Date();
-    d.setDate(d.getDate() - i);
-    byMonth[d.toISOString().slice(0, 10)] = 0;
-  }
+  var d = new Date();
+  d.setDate(d.getDate() - i);
+  var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  byMonth[key] = 0;
+}
 }
 sales.forEach(function(s) {
   const key = days === 7 ? s.date : (s.date ? s.date.slice(0,7) : null);

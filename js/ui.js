@@ -109,6 +109,7 @@ sales.forEach(function(s) {
       type: 'line',
       data: {
         labels: labels.map(function(l) {
+          if (days === 1) return l;
           if (days === 7) return new Date(l).toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'});
           if (days <= 30) return new Date(l).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
           const parts = l.split('-');

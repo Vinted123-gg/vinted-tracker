@@ -80,10 +80,17 @@ const UI = {
       sales = sales.filter(function(s) { return new Date(s.date) >= since; });
     }
     const byMonth = {};
-    sales.forEach(function(s) {
-      const key = days === 7 ? s.date : (s.date ? s.date.slice(0,7) : null);
-      if (key) byMonth[key] = (byMonth[key]||0) + (parseFloat(s.price)||0);
-    });
+if (days === 7) {
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    byMonth[d.toISOString().slice(0, 10)] = 0;
+  }
+}
+sales.forEach(function(s) {
+  const key = days === 7 ? s.date : (s.date ? s.date.slice(0,7) : null);
+  if (key) byMonth[key] = (byMonth[key]||0) + (parseFloat(s.price)||0);
+});
     const labels = Object.keys(byMonth).sort();
     const data = labels.map(function(l) { return Math.round(byMonth[l]*100)/100; });
     const ctx = document.getElementById('revenueChart') ? document.getElementById('revenueChart').getContext('2d') : null;

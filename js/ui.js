@@ -93,7 +93,7 @@ if (days === 1) {
   }
 }
 sales.forEach(function(s) {
-  const key = days === 1 ? (s.date ? String(new Date(s.date).getHours()).padStart(2,'0') + 'h' : null) : days === 7 ? (s.date ? s.date.slice(0,10) : null) : (s.date ? s.date.slice(0,7) : null);
+  const key = days === 1 ? (s.date ? String(new Date(s.date + (s.date.length === 10 ? 'T12:00:00' : '')).getHours()).padStart(2,'0') + 'h' : null) : days === 7 ? (s.date ? s.date.slice(0,10) : null) : (s.date ? s.date.slice(0,7) : null);
   if (key) byMonth[key] = (byMonth[key]||0) + (parseFloat(s.price)||0);
 });
     const labels = Object.keys(byMonth).sort();

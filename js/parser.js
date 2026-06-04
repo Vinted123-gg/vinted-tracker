@@ -54,9 +54,9 @@ const Parser = {
   },
 
   parseDate(headerDate) {
-    if (headerDate) { const d = new Date(headerDate); if (!isNaN(d)) return d.toISOString().slice(0, 10); }
-    return new Date().toISOString().slice(0, 10);
-  },
+  if (headerDate) { const d = new Date(headerDate); if (!isNaN(d)) return d.toISOString(); }
+  return new Date().toISOString();
+},
 
   detectStatus(body) {
     const b = body.toLowerCase();

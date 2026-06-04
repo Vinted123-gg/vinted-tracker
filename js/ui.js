@@ -81,9 +81,9 @@ const UI = {
     }
     const byMonth = {};
 if (days === 1) {
-  var today = new Date();
-  var todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-  byMonth[todayKey] = 0;
+  for (var h = 0; h < 24; h++) {
+    byMonth[String(h).padStart(2,'0') + 'h'] = 0;
+  }
 } else if (days === 7) {
   for (var i = 6; i >= 0; i--) {
     var d = new Date();
@@ -93,7 +93,7 @@ if (days === 1) {
   }
 }
 sales.forEach(function(s) {
-  const key = days === 7 ? s.date : (s.date ? s.date.slice(0,7) : null);
+  const key = days === 1 ? (s.date ? String(new Date(s.date).getHours()).padStart(2,'0') + 'h' : null) : days === 7 ? (s.date ? s.date.slice(0,10) : null) : (s.date ? s.date.slice(0,7) : null);
   if (key) byMonth[key] = (byMonth[key]||0) + (parseFloat(s.price)||0);
 });
     const labels = Object.keys(byMonth).sort();

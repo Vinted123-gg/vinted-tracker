@@ -11,12 +11,11 @@ const Parser = {
   /(\d+[,\.]\d{2})\s*(?:€|â¬|EUR)/,
   /(\d+[,\.]\d{2})/,
 ],
-  TITLE_PATTERNS: [
-    /"([^"]{3,80})"/,
-    /article\s*:\s*([^\n\r<]{3,80})/i,
-    /item\s*:\s*([^\n\r<]{3,80})/i,
-    /vous avez vendu\s+([^\n\r<]{3,80})/i,
-  ],
+TITLE_PATTERNS: [
+  /a achet[eé]\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
+  /"([^"]{3,80})"/,
+  /article\s*:\s*([^\n\r<]{3,80})/i,
+],
   SHIPPING_PATTERNS: [
     /expédition.*?(\d+[.,]\d{2})\s*€/i,
     /livraison.*?(\d+[.,]\d{2})\s*€/i,
@@ -37,13 +36,18 @@ const Parser = {
     return null;
   },
 
-  parseTitle(text, subject) {
-    for (const pattern of this.TITLE_PATTERNS) {
-      const match = text.match(pattern);
-      if (match) return match[1].trim().replace(/<[^>]+>/g, '').trim();
+ parseTitle(text, subject) {
+  for (const pattern of this.TITLE_PATTERNS) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      const title = match[1].trim().replace(/<[^>]+>/g, '').trim();
+      if (title.length > 2 && !title.includes('Vinted') && !title.includes('vinted')) {
+        return title;
+      }
     }
-    return subject.replace(/vous avez vendu\s*/i, '').replace(/félicitations[,:]*\s*/i, '').trim() || 'Article vendu';
-  },
+  }
+  return 'Article vendu';
+},
 
   parseShipping(text) {
     for (const pattern of this.SHIPPING_PATTERNS) {

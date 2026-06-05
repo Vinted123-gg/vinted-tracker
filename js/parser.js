@@ -12,10 +12,10 @@ const Parser = {
   /(\d+[,\.]\d{2})/,
 ],
 TITLE_PATTERNS: [
-  /a achet[eéÃ©]+\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
-  /hat gekauft\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
+  /a achet.{1,10}\s+(.{3,80}?)\s+\d+[,\.]\d{2}/i,
+  /hat gekauft\s+(.{3,80}?)\s+\d+[,\.]\d{2}/i,
   /"([^"]{3,80})"/,
-  /article\s*:\s*([^\n\r<]{3,80})/i,
+  /article\s*:\s*(.{3,80})/i,
 ],
   SHIPPING_PATTERNS: [
     /expédition.*?(\d+[.,]\d{2})\s*€/i,
@@ -38,11 +38,16 @@ TITLE_PATTERNS: [
   },
 
  parseTitle(text, subject) {
+  const cleanText = text
+    .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã /g, 'à')
+    .replace(/Ã¢/g, 'â').replace(/Ã®/g, 'î').replace(/Ã´/g, 'ô')
+    .replace(/Ã»/g, 'û').replace(/Ã«/g, 'ë').replace(/Ã¯/g, 'ï')
+    .replace(/Ã§/g, 'ç').replace(/Ã¹/g, 'ù');
   for (const pattern of this.TITLE_PATTERNS) {
-    const match = text.match(pattern);
+    const match = cleanText.match(pattern);
     if (match && match[1]) {
       const title = match[1].trim().replace(/<[^>]+>/g, '').trim();
-      if (title.length > 2 && !title.includes('Vinted') && !title.includes('vinted')) {
+      if (title.length > 2 && !title.toLowerCase().includes('vinted')) {
         return title;
       }
     }

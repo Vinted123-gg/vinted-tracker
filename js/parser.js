@@ -12,7 +12,8 @@ const Parser = {
   /(\d+[,\.]\d{2})/,
 ],
 TITLE_PATTERNS: [
-  /a achet[eé]\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
+  /a achet[eéÃ©]+\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
+  /hat gekauft\s+([^\n\r<]{3,80}?)\s+\d+[,\.]\d{2}/i,
   /"([^"]{3,80})"/,
   /article\s*:\s*([^\n\r<]{3,80})/i,
 ],

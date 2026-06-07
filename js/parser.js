@@ -41,7 +41,8 @@ TITLE_PATTERNS: [
     .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã /g, 'à')
     .replace(/Ã¢/g, 'â').replace(/Ã®/g, 'î').replace(/Ã´/g, 'ô')
     .replace(/Ã»/g, 'û').replace(/Ã«/g, 'ë').replace(/Ã¯/g, 'ï')
-    .replace(/Ã§/g, 'ç').replace(/Ã¹/g, 'ù');
+    .replace(/Ã§/g, 'ç').replace(/Ã¹/g, 'ù').replace(/â/g, '-')
+    .replace(/[^\x00-\x7FÀ-ÿ]/g, ' ').replace(/\s+/g, ' ').trim();
   for (const pattern of this.TITLE_PATTERNS) {
     const match = cleanText.match(pattern);
     if (match && match[1]) {
@@ -53,7 +54,6 @@ TITLE_PATTERNS: [
   }
   return 'Article vendu';
 },
-
   parseShipping(text) {
     for (const pattern of this.SHIPPING_PATTERNS) {
       const match = text.match(pattern);

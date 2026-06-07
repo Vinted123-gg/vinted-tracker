@@ -54,7 +54,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .account-email { font-size: 11px; color: var(--text-3); }
 .account-status.ok { font-size: 11px; color: var(--green); }
 #screen-app { display: flex; flex-direction: column; padding-top: calc(52px + var(--safe-top)); padding-bottom: calc(var(--nav-h) + var(--safe-bottom)); }
-.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: calc(52px + var(--safe-top)); background: var(--green-dark); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 16px 8px; }
+.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; min-height: calc(52px + var(--safe-top)); background: var(--green-dark); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 16px 10px; padding-top: calc(var(--safe-top) + 4px); }
 .topbar-logo { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 15px; font-weight: 700; }
 .topbar-logo .ti { font-size: 18px; opacity: .9; }
 .topbar-actions { display: flex; gap: 2px; }

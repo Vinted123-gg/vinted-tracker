@@ -46,7 +46,12 @@ TITLE_PATTERNS: [
   for (const pattern of this.TITLE_PATTERNS) {
     const match = cleanText.match(pattern);
     if (match && match[1]) {
-      const title = match[1].trim().replace(/<[^>]+>/g, '').trim();
+      const title = match[1].trim()
+        .replace(/<[^>]+>/g, '')
+        .replace(/â/g, '-')
+        .replace(/[^\x00-\x7FÀ-ÿ]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (title.length > 2 && !title.toLowerCase().includes('vinted')) {
         return title;
       }

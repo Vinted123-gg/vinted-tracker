@@ -13,7 +13,7 @@
   --radius-sm: 8px;
   --shadow-md: 0 2px 8px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.06);
   --nav-h: 60px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
   --safe-top: env(safe-area-inset-top, 0px);
   --font: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
